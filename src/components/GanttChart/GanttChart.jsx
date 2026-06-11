@@ -69,7 +69,19 @@ export default function GanttChart() {
   } = ganttData
 
   const flatTasks = useMemo(() => {
-    const tree = getTaskTree(activeProjectId)
+    if (!activeProjectId || tasks.length === 0) return []
+
+    const buildTree = (parentId = null) => {
+      return tasks
+        .filter((t) => t.parentId === parentId)
+        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+        .map((t) => ({
+          ...t,
+          children: buildTree(t.id)
+        }))
+    }
+    const tree = buildTree(null)
+
     const result = []
     const walk = (nodes, level) => {
       nodes.forEach((n) => {
@@ -81,7 +93,7 @@ export default function GanttChart() {
     }
     walk(tree, 0)
     return result
-  }, [getTaskTree, activeProjectId, collapsed])
+  }, [tasks, activeProjectId, collapsed])
 
   const timeline = useTimeline(flatTasks)
 

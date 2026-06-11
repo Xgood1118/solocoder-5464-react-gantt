@@ -82,14 +82,27 @@ export default function TaskTree({
   onAddChildTask,
   onDeleteTask
 }) {
-  const getTaskTree = useTaskStore((s) => s.getTaskTree)
+  const allTasks = useTaskStore((s) => s.tasks)
   const collapsed = useTaskStore((s) => s.collapsed)
   const toggleCollapse = useTaskStore((s) => s.toggleCollapse)
   const deleteTask = useTaskStore((s) => s.deleteTask)
   const deleteLinksForTasks = useTaskStore((s) => s.deleteLinksForTasks) || (() => {})
   const toast = useToastStore()
 
-  const tree = useMemo(() => getTaskTree(projectId), [getTaskTree, projectId])
+  const tree = useMemo(() => {
+    if (!projectId) return []
+    const tasks = allTasks.filter((t) => t.projectId === projectId)
+    const buildTree = (parentId = null) => {
+      return tasks
+        .filter((t) => t.parentId === parentId)
+        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+        .map((t) => ({
+          ...t,
+          children: buildTree(t.id)
+        }))
+    }
+    return buildTree(null)
+  }, [allTasks, projectId])
 
   const handleDelete = (task) => {
     if (!confirm(`确定要删除任务"${task.name}"及其所有子任务吗？`)) return
