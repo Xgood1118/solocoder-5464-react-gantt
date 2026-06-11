@@ -1,0 +1,69 @@
+.gantt-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.gantt-toolbar .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  color: #1f2937;
+  cursor: pointer;
+  user-select: none;
+}
+
+.gantt-toolbar .logo-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.gantt-toolbar .divider {
+  width: 1px;
+  height: 24px;
+  background: #e5e7eb;
+}
+
+.gantt-toolbar .project-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gantt-toolbar .toolbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gantt-toolbar .view-toggle {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.gantt-toolbar .view-toggle button {
+  padding: 6px 12px;
+  border-radius: 0;
+}
+
+.gantt-toolbar .view-toggle button.active {
+  background: #3b82f6;
+  color: #fff;
+}

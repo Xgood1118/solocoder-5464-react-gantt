@@ -1,0 +1,109 @@
+.task-tree {
+  width: 320px;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.task-tree-header {
+  padding: 10px 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  height: 60px;
+}
+
+.task-tree-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.task-node {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  height: 40px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.1s;
+  user-select: none;
+}
+
+.task-node:hover {
+  background: #f3f4f6;
+}
+
+.task-node.selected {
+  background: #eff6ff;
+}
+
+.task-node-indent {
+  display: flex;
+  align-items: center;
+}
+
+.task-toggle {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.task-toggle.has-children {
+  cursor: pointer;
+}
+
+.task-name {
+  flex: 1;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 4px;
+}
+
+.task-name.milestone {
+  font-weight: 600;
+  color: #7c3aed;
+}
+
+.task-progress {
+  width: 50px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.task-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.task-actions {
+  display: none;
+  gap: 2px;
+}
+
+.task-node:hover .task-actions {
+  display: flex;
+}
+
+.task-actions button {
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 3px;
+}
