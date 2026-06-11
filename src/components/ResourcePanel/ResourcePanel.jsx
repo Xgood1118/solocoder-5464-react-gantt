@@ -118,12 +118,14 @@ export default function ResourcePanel({
   const avgLoad = useMemo(() => {
     const result = new Map()
     resourceLoad?.forEach((dayMap, resourceId) => {
-      const entries = Object.values(dayMap)
+      const entries = Object.values(dayMap).filter((e) => isFinite(e.loadPercent) && e.loadPercent >= 0)
       if (entries.length === 0) {
-        result.set(resourceId, 0)
+        result.set(resourceId, { load: 0, hasError: false })
       } else {
-        const avg = entries.reduce((sum, e) => sum + e.loadPercent, 0) / entries.length
-        result.set(resourceId, Math.round(avg))
+        const hasError = Object.values(dayMap).some((e) => e.error || !isFinite(e.loadPercent))
+        const avg = entries.reduce((sum, e) => sum + (e.loadPercent || 0), 0) / entries.length
+        const load = Math.max(0, Math.round(avg))
+        result.set(resourceId, { load: isFinite(load) ? load : 0, hasError })
       }
     })
     return result
@@ -174,9 +176,12 @@ export default function ResourcePanel({
           </div>
         ) : (
           resources.map((r) => {
-            const load = avgLoad.get(r.id) || 0
+            const loadData = avgLoad.get(r.id) || { load: 0, hasError: false }
+            const load = loadData.load
+            const hasError = loadData.hasError
             let loadClass = 'normal'
-            if (load > 100) loadClass = 'overload'
+            if (hasError) loadClass = 'overload'
+            else if (load > 100) loadClass = 'overload'
             else if (load > 85) loadClass = 'warning'
 
             return (
@@ -187,18 +192,20 @@ export default function ResourcePanel({
                   <span className="resource-type">{RESOURCE_TYPE_LABEL[r.type]}</span>
                 </div>
                 <div className="resource-info">
-                  日可用：{r.dailyCapacity}h
+                  日可用：{r.dailyCapacity || 8}h
                   {r.email && <span> · {r.email}</span>}
+                  {hasError && <span style={{ color: '#ef4444' }}> · ⚠ 数据异常</span>}
                 </div>
                 <div className="resource-load-bar">
                   <div
                     className={`resource-load-fill ${loadClass}`}
-                    style={{ width: Math.min(load, 100) + '%' }}
+                    style={{ width: Math.min(load, 100) + '%', background: hasError ? '#ef4444' : undefined }}
                   />
                 </div>
                 <div className="resource-load-text">
-                  平均负荷：{load}%
-                  {load > 100 && <span style={{ color: '#ef4444', fontWeight: 600 }}> ⚠ 超载</span>}
+                  平均负荷：{hasError ? '⚠ 计算异常' : `${load}%`}
+                  {hasError && <span style={{ color: '#ef4444', fontWeight: 600 }}> 请检查日可用工时设置</span>}
+                  {!hasError && load > 100 && <span style={{ color: '#ef4444', fontWeight: 600 }}> ⚠ 超载</span>}
                 </div>
                 <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
                   <button

@@ -209,10 +209,19 @@ export default function ResourceView({
                     const dateStr = d.format('YYYY-MM-DD')
                     const loadInfo = loadMap[dateStr]
                     if (!loadInfo) return null
+
+                    const hasError = loadInfo.error || !isFinite(loadInfo.loadPercent) || !isFinite(loadInfo.hours)
+                    const loadPercent = hasError ? 0 : Math.max(0, loadInfo.loadPercent)
+                    const hours = hasError ? 0 : loadInfo.hours
+                    const capacity = isFinite(loadInfo.capacity) ? loadInfo.capacity : 8
+
                     let bg = 'transparent'
-                    if (loadInfo.overloaded) bg = 'rgba(245, 158, 11, 0.3)'
-                    else if (loadInfo.loadPercent > 80) bg = 'rgba(245, 158, 11, 0.15)'
+                    if (hasError) bg = 'rgba(239, 68, 68, 0.3)'
+                    else if (loadInfo.overloaded) bg = 'rgba(245, 158, 11, 0.3)'
+                    else if (loadPercent > 80) bg = 'rgba(245, 158, 11, 0.15)'
+
                     if (bg === 'transparent') return null
+
                     return (
                       <div
                         key={idx}
@@ -228,11 +237,14 @@ export default function ResourceView({
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: loadInfo.overloaded ? '#92400e' : '#92400e'
+                          color: hasError ? '#7f1d1d' : (loadInfo.overloaded ? '#92400e' : '#92400e')
                         }}
-                        title={`${dateStr}: ${loadInfo.hours.toFixed(1)}h / ${loadInfo.capacity}h (${loadInfo.loadPercent}%)`}
+                        title={hasError
+                          ? `${dateStr}: ⚠ 数据异常，请检查资源日可用工时`
+                          : `${dateStr}: ${hours.toFixed(1)}h / ${capacity}h (${loadPercent}%)`
+                        }
                       >
-                        {loadInfo.loadPercent >= 50 ? loadInfo.loadPercent + '%' : ''}
+                        {hasError ? '⚠' : (loadPercent >= 50 ? loadPercent + '%' : '')}
                       </div>
                     )
                   })}

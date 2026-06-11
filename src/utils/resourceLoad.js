@@ -12,7 +12,9 @@ export const calculateResourceLoad = (tasks, resources, assignments, settings = 
     const task = tasks.find((t) => t.id === a.taskId)
     if (!task) return
     const days = getWorkingDaysBetween(task.startDate, task.endDate, settings.excludeWeekends)
-    const hoursPerDay = (a.units || 100) / 100 * (task.hoursPerDay || settings.workingHoursPerDay)
+    const units = Math.max(0, Math.min(100, a.units ?? 100))
+    const taskHoursPerDay = Math.max(0, task.hoursPerDay ?? settings.workingHoursPerDay)
+    const hoursPerDay = (units / 100) * taskHoursPerDay
 
     days.forEach((day) => {
       if (!loadMap.has(a.resourceId)) loadMap.set(a.resourceId, {})
@@ -25,14 +27,19 @@ export const calculateResourceLoad = (tasks, resources, assignments, settings = 
   resources.forEach((r) => {
     const dayMap = loadMap.get(r.id) || {}
     const normalized = {}
+    const capacity = Math.max(0.1, r.dailyCapacity ?? settings.workingHoursPerDay ?? 8)
+
     Object.keys(dayMap).forEach((day) => {
-      const hours = dayMap[day]
-      const capacity = r.dailyCapacity || settings.workingHoursPerDay
+      const hours = dayMap[day] ?? 0
+      const loadPercent = Math.round((hours / capacity) * 100)
+      const isNaN = !isFinite(loadPercent)
+
       normalized[day] = {
-        hours,
+        hours: isNaN ? 0 : hours,
         capacity,
-        loadPercent: Math.round((hours / capacity) * 100),
-        overloaded: hours > capacity
+        loadPercent: isNaN ? 0 : Math.max(0, Math.min(1000, loadPercent)),
+        overloaded: !isNaN && hours > capacity,
+        error: isNaN
       }
     })
     result.set(r.id, normalized)

@@ -78,15 +78,24 @@ export default function TaskEditModal({ open, task, projectId, tasks, onClose, o
     }
   }, [open, task, projectId])
 
-  const isStatusJump = () => {
-    if (!task) return null
-    const order = [TASK_STATUS.NOT_STARTED, TASK_STATUS.IN_PROGRESS, TASK_STATUS.COMPLETED]
-    const oldIdx = order.indexOf(task.status)
-    const newIdx = order.indexOf(form.status)
-    if (oldIdx >= 0 && newIdx >= 0 && newIdx - oldIdx > 1 && form.status === TASK_STATUS.COMPLETED && task.status === TASK_STATUS.NOT_STARTED) {
-      return true
+  const checkStatusTransition = () => {
+    if (!task || task.status === form.status) return { needWarn: false, message: '' }
+    const oldStatus = task.status
+    const newStatus = form.status
+
+    const transitions = {
+      [`${TASK_STATUS.NOT_STARTED}->${TASK_STATUS.COMPLETED}`]: '状态从"未开始"直接跳到"已完成"',
+      [`${TASK_STATUS.COMPLETED}->${TASK_STATUS.NOT_STARTED}`]: '状态从"已完成"退回"未开始"',
+      [`${TASK_STATUS.COMPLETED}->${TASK_STATUS.IN_PROGRESS}`]: '状态从"已完成"退回"进行中"',
+      [`${TASK_STATUS.IN_PROGRESS}->${TASK_STATUS.NOT_STARTED}`]: '状态从"进行中"退回"未开始"',
+      [`${TASK_STATUS.BLOCKED}->${TASK_STATUS.NOT_STARTED}`]: '状态从"已阻塞"退回"未开始"'
     }
-    return false
+
+    const key = `${oldStatus}->${newStatus}`
+    if (transitions[key]) {
+      return { needWarn: true, message: transitions[key] }
+    }
+    return { needWarn: false, message: '' }
   }
 
   const handleSave = () => {
@@ -99,8 +108,9 @@ export default function TaskEditModal({ open, task, projectId, tasks, onClose, o
       return
     }
 
-    if (isStatusJump()) {
-      if (!confirm('警告：状态从"未开始"直接跳到"已完成"，是否确认？')) {
+    const { needWarn, message } = checkStatusTransition()
+    if (needWarn) {
+      if (!confirm(`警告：${message}，是否确认？`)) {
         return
       }
     }
